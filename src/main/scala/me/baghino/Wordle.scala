@@ -73,6 +73,7 @@ final class Wordle(
     dictionary
       .filterNot(_.exists(exclusion))
       .maxByOption(_.distinct.map(weights).sum)
+      .orElse(dictionary.maxByOption(_.distinct.map(weights).sum))
   }
 
   private def weigh(dictionary: collection.Set[String]): Map[Char, Int] =
