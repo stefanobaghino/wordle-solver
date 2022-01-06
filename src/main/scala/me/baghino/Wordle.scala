@@ -38,6 +38,11 @@ final class Wordle(
     if (at4.isLetter) exactMatch(4) = at4.toLower
     val doesNotMatchSet = doesNotMatch.toSet
     dictionary.filterInPlace(!_.exists(doesNotMatchSet))
+    dictionary.filterInPlace(word =>
+      exactMatch.forall { case (index, letter) =>
+        word(index) == letter
+      }
+    )
     currentGuess.foreach(dictionary -= _)
     this.fuzzyMatch ++= fuzzyMatch.toSet
     this.fuzzyMatch --= exactMatch.values.toSet
