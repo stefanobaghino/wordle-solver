@@ -14,6 +14,12 @@ final class Wordle(
 
   nextGuess()
 
+  def reset(): Unit = {
+    fuzzyMatch.clear()
+    exactMatch.clear()
+    nextGuess()
+  }
+
   def feedback(
       doesNotMatch: String = "",
       fuzzyMatch: String = "",
