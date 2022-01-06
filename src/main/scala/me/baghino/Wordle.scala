@@ -10,6 +10,7 @@ final class Wordle(
     exactMatch: mutable.Map[Int, Char],
 ) {
 
+  private val fullDictionary: Set[String] = dictionary.toSet
   private var currentGuess: Option[String] = None
 
   nextGuess()
@@ -17,6 +18,7 @@ final class Wordle(
   def reset(): Unit = {
     fuzzyMatch.clear()
     exactMatch.clear()
+    dictionary.addAll(fullDictionary)
     nextGuess()
   }
 
