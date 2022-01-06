@@ -44,6 +44,8 @@ My next guess is 'tiger'.
 
 And voila: "tiger" is indeed the correct answer.
 
+If you want to preserve the dictionary but start over, invoke the `reset` method.
+
 #### How it works
 
 Until we have five matching letters that we can use to make an educated guess, we make a few exploratory guesses, aimed
