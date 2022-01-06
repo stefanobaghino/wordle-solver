@@ -49,6 +49,7 @@ If you want to preserve the dictionary but start over, invoke the `reset` method
 #### How it works
 
 Until we have five matching letters that we can use to make an educated guess, we make a few exploratory guesses, aimed
-at cutting words from the dictionary based on letters that we know are not in the word while looking for . When we have
-five matching letters we try to make educated guesses. Luckily it doesn't look like there's a high number of anagrams
-for any given set of letters, so this should be safe enough to give the right answer by turn 4.
+at cutting words from the dictionary based on letters that we know are not in the word. It also tries to maximize the
+amount of information it gets at every round of exploratory guesses by explicitly removing words with known letters.
+When we have five matching letters we try to make educated guesses. Luckily it doesn't look like there's a high number
+of anagrams for any given set of letters, so this should be safe enough to give the right answer by turn 4.
