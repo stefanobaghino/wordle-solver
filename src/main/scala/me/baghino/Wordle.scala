@@ -1,17 +1,18 @@
 package me.baghino
 
-import scala.collection.mutable
+import scala.collection.{mutable}
 import scala.io.Source
 import scala.util.Using
 
 final class Wordle(
-    dictionary: mutable.Set[String],
+    dictionary: mutable.SortedSet[String],
     fuzzyMatch: mutable.Set[Char],
     exactMatch: mutable.Map[Int, Char],
 ) {
 
   private val fullDictionary: Set[String] = dictionary.toSet
   private var currentGuess: Option[String] = None
+  private var remainingAttempts: Int = 6
 
   nextGuess()
 
@@ -19,6 +20,7 @@ final class Wordle(
     fuzzyMatch.clear()
     exactMatch.clear()
     dictionary.addAll(fullDictionary)
+    remainingAttempts = 6
     nextGuess()
   }
 
@@ -51,12 +53,20 @@ final class Wordle(
   }
 
   private def nextGuess(): Unit = {
-    currentGuess = if (fuzzyMatch.size + exactMatch.size >= 5) {
-      educatedGuess().headOption
+    if (remainingAttempts < 1) {
+      println("No more attempts left.")
     } else {
-      exploratoryGuess()
+      remainingAttempts -= 1
+      val remainingWords = educatedGuess()
+      currentGuess =
+        if (remainingWords.size < remainingAttempts || fuzzyMatch.size + exactMatch.size >= 5) {
+          remainingWords.headOption
+        } else {
+          exploratoryGuess()
+        }
+      print(currentGuess.fold("I surrender.")(guess => s"My next guess is '$guess'."))
+      println(s" $remainingAttempts remaining attempts.")
     }
-    println(currentGuess.fold("I surrender.")(guess => s"My next guess is '$guess'."))
   }
 
   private def educatedGuess(): collection.Set[String] = {
@@ -68,16 +78,9 @@ final class Wordle(
   }
 
   private def exploratoryGuess(): Option[String] = {
-    val weights = weigh(dictionary)
     val exclusion = exactMatch.values.toSet ++ fuzzyMatch
-    dictionary
-      .filterNot(_.exists(exclusion))
-      .maxByOption(_.distinct.map(weights).sum)
-      .orElse(dictionary.maxByOption(_.distinct.map(weights).sum))
+    dictionary.find(!_.exists(exclusion)).orElse(dictionary.headOption)
   }
-
-  private def weigh(dictionary: collection.Set[String]): Map[Char, Int] =
-    dictionary.view.reduce(_ + _).groupMapReduce(identity)(_ => 1)(_ + _)
 
 }
 
@@ -90,14 +93,15 @@ object Wordle {
       mutable.Map.empty,
     )
 
-  private def doLoadAndCleanDictionary(path: String): mutable.Set[String] =
-    Using(Source.fromFile(path))(
-      _.getLines
-        .collect {
+  private def doLoadAndCleanDictionary(path: String): mutable.SortedSet[String] =
+    Using(Source.fromFile(path))(file => {
+      val words =
+        file.getLines.collect {
           case word if valid(word) => word.toLowerCase
-        }
-        .to(mutable.Set)
-    ).get
+        }.toSet
+      val weights = words.view.reduce(_ + _).groupMapReduce(identity)(_ => 1)(_ + _)
+      mutable.SortedSet.from(words)(Ordering.by(-_.distinct.map(weights).sum))
+    }).get
 
   private def valid(word: String): Boolean =
     word.length == 5 && word.forall(_.isLetter)
